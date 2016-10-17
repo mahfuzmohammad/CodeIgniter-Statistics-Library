@@ -118,7 +118,7 @@ class Statistics {
 		$cmaLenght = count($cma);
 		// remember, $t = index + 1 in 1 indexed
 		$tl = 2; // starting $t for CMA, 0-indexed
-		$tr = count($y) - 3; // ending $t for CMA, 0-indexed
+		$tr = count($y) - $seasons; // ending $t for CMA, 0-indexed
 
 		for( $i = 0; $i < $cmaLenght; $i++ ) {
 			array_push($StIt, floatval($y[ $tl + $i ]) / floatval($cma[$i]));
