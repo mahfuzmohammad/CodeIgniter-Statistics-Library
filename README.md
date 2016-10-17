@@ -4,6 +4,7 @@ A simple library for CodeIgniter platform to perform simple linear regression, m
 ## How to install
 1. Download the git repository.
 2. Copy the Statistics.php file to libraries folder of your CodeIgniter project.
+3. Include the library in your controller
 
 ## Example
 ### Time series forecast ( Multiplicative model )
