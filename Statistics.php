@@ -126,7 +126,7 @@ class Statistics {
 
 		for( $i = 0; $i < $seasons; $i++ ) {
 			$sum = 0; $cnt = 0;
-			for( $j = $i; $j <= $tr; $j += $seasons ) {
+			for( $j = $i; $j < $tr; $j += $seasons ) {
 				if( $j >= $tl ) {
 					$sum += $StIt[ $j - 2 ];
 					$cnt++;
@@ -190,6 +190,30 @@ class Statistics {
 		for( $i = 0; $i < $number_of_outputs; $i++ ) {
 			array_push($forecasts, $tt[$i] * $st[ $i % $seasons ] );
 		}
+	}
+
+	/**
+	 * Calculates Mean Absolute Percent Error (MAPE)
+	 *
+	 * @param 	array 	$real		real training data
+	 * @param 	array 	$output		output from model for same input
+	 * 								parameters of training data
+	 */
+	public function mean_absolute_percent_error(&$real, &$output) {
+		$number_of_inputs = count($real);
+		$number_of_outputs = count($output);
+		$error = 0.0;
+
+		if( $number_of_inputs <= $number_of_outputs ) {
+			for( $i = 0; $i < $number_of_inputs; $i++ ) {
+				$error += ( abs($real[$i] - $output[$i]) / abs($real[$i]) );
+			}
+
+			$error /= floatval($number_of_inputs);
+			$error *= 100.0;
+		}
+
+		return $error;
 	}
 }
 
