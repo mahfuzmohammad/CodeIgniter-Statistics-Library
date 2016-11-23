@@ -116,9 +116,12 @@ class Statistics {
 
 		$StIt = array(); // $StIt = Yt / CMA
 		$cmaLenght = count($cma);
+		$cmaOffset = $seasons / 2;
 		// remember, $t = index + 1 in 1 indexed
-		$tl = 2; // starting $t for CMA, 0-indexed
-		$tr = count($y) - $seasons; // ending $t for CMA, 0-indexed
+		$tl = $cmaOffset; // starting $t for CMA, 0-indexed
+		$tr = count($y) - $cmaOffset; // ending $t for CMA, 0-indexed
+
+		if( $cmaLenght < $seasons ) return;
 
 		for( $i = 0; $i < $cmaLenght; $i++ ) {
 			array_push($StIt, floatval($y[ $tl + $i ]) / floatval($cma[$i]));
@@ -127,8 +130,8 @@ class Statistics {
 		for( $i = 0; $i < $seasons; $i++ ) {
 			$sum = 0; $cnt = 0;
 			for( $j = $i; $j < $tr; $j += $seasons ) {
-				if( $j >= $tl ) {
-					$sum += $StIt[ $j - 2 ];
+				if( $j > $tl ) {
+					$sum += $StIt[ $j - $cmaOffset ];
 					$cnt++;
 				}
 			}
@@ -148,6 +151,9 @@ class Statistics {
 	 * @return 	void
 	 */
 	public function trend_components(&$y, &$st, $seasons, $number_of_outputs, &$tt) {
+
+		if (count($st) != $seasons) return;
+
 		// deseasonalize
 		$number_of_inputs = count($y);
 		$t = array();
@@ -173,23 +179,32 @@ class Statistics {
 	 * @param 	int 	$seasons 			number of seasons to use
 	 * @param 	int 	$forecast_number 	how many points ahead
 	 *										needed to be forcasted
-	 * @param 	array 	$forecasts 			output
+	 * @param 	array 	$output 			output
 	 * @return 	void
 	 */
-	public function time_series_forecast_multiplicative_model(&$y, &$seasons, $forecast_number, &$forecasts) {
+	public function time_series_forecast_multiplicative_model(&$y, $seasons, $forecast_number, &$output) {
 
 		$number_of_inputs = count($y);
 		$number_of_outputs = $number_of_inputs + $forecast_number;
 
 		$st = array();
 		$tt = array();
+		$forecasts = array();
 
 		$this->seasonal_components($y, $seasons, $st);
 		$this->trend_components($y, $st, $seasons, $number_of_outputs, $tt);
 
-		for( $i = 0; $i < $number_of_outputs; $i++ ) {
-			array_push($forecasts, $tt[$i] * $st[ $i % $seasons ] );
+		if( count($st) >= $seasons ) {
+			for( $i = 0; $i < $number_of_outputs; $i++ ) {
+				array_push($forecasts, $tt[$i] * $st[ $i % $seasons ] );
+			}
 		}
+
+		$output = array(
+			"seasonal_components" => $st,
+			"trend_components" => $tt,
+			"forecasts" => $forecasts
+		);
 	}
 
 	/**
@@ -206,6 +221,13 @@ class Statistics {
 
 		if( $number_of_inputs <= $number_of_outputs ) {
 			for( $i = 0; $i < $number_of_inputs; $i++ ) {
+
+				// invalid
+				if( abs($real[$i]) == 0 ) {
+					$error = NAN;
+					break;
+				}
+
 				$error += ( abs($real[$i] - $output[$i]) / abs($real[$i]) );
 			}
 
